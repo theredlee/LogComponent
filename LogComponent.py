@@ -53,7 +53,7 @@ class LogComponent:
 
             # print("check_log_folder at " + str(i) + " s ...")
 
-        print('check_log_folder closing down')
+        print('check_log_folder() closing down')
     
     def get_file_name(self):
         timestamp = self.get_time()
@@ -83,9 +83,13 @@ class LogComponent:
 
     async def _async_write_(self, line):
         print("Started _async_write_ thread successfully.")
-        try:
-            async with aiofiles.open(self.get_file_name(), mode='a') as f:
-                await f.write(line)
-                await f.flush()
-        except EnvironmentError as e:
-            print(e)
+        
+        if self.run_event.is_set():
+            try:
+                async with aiofiles.open(self.get_file_name(), mode='a') as f:
+                    await f.write(line)
+                    await f.flush()
+            except EnvironmentError as e:
+                print(e)
+        else:
+            print('_async_write_() closing down')
