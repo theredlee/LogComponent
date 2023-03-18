@@ -83,6 +83,9 @@ class LogComponent:
 
     async def _async_write_(self, line):
         print("Started _async_write_ thread successfully.")
-        async with aiofiles.open(self.get_file_name(), mode='a') as f:
-            await f.write(line)
-            await f.flush()
+        try:
+            async with aiofiles.open(self.get_file_name(), mode='a') as f:
+                await f.write(line)
+                await f.flush()
+        except EnvironmentError as e:
+            print(e)
