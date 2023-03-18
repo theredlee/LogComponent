@@ -23,15 +23,19 @@ class LogComponent:
         self.loop = asyncio.get_event_loop()
         self.run_event = threading.Event()
         self.run_event.set()
-        self.th = threading.Thread(target=self.check_log_folder, args=())
-        self.th.start()
+        # For check_log_folder
+        self.th1 = threading.Thread(target=self.check_log_folder, args=())
+        self.th1.start()
+        # For write
+        self.th2 = None
     
     def get_time(self): # to second
         return datetime.now().strftime('%Y%m%d_%H_%M_%S.%f')[:-7]
     
     def check_log_folder(self):
-        
-        while self.run_event.is_set():
+        print("Started check_log_folder thread successfully.")
+
+        while self.run_event.is_set(): # for i in range(5):
             timestamp = self.get_time()
             date = timestamp[:-9]
             folder = LOG_PATH + date
@@ -46,9 +50,12 @@ class LogComponent:
             
             # Sleep for 1 second
             time.sleep(1)
+            
+            # print("check_log_folder at " + str(i) + " s ...")
+
+        print('check_log_folder closing down')
     
     def get_file_name(self):
-
         timestamp = self.get_time()
         hour = timestamp[:-6]
         date = timestamp[:-9]
@@ -70,40 +77,12 @@ class LogComponent:
         return file_name
 
     def write(self, line):
-        return self.loop.run_until_complete(self._async_write_(line))
+        # For write
+        self.th2 = threading.Thread(target=self.loop.run_until_complete(self._async_write_(line)), args=())
+        self.th2.start()
 
     async def _async_write_(self, line):
+        print("Started _async_write_ thread successfully.")
         async with aiofiles.open(self.get_file_name(), mode='a') as f:
             await f.write(line)
             await f.flush()
-
-# ==============================================================
-# LC = LogComponent()
-# LC.write()
-
-# ==============================================================
-# asyncio.run(LC.write())
-# loop = asyncio.get_event_loop()
-# server = loop.run_until_complete(write())
-
-# ============================================================== Module Call Testing
-
-LC = LogComponent()
-
-timestamp = datetime.now().strftime('%Y%m%d_%H_%M_%S.%f')[:-7]
-# print(timestamp[:-9])
-
-with open(PATH + 'read_2mb.txt') as f:
-    # lines = f.readlines()
-    contents = f.read()
-    LC.write(contents)
-    # print(contents)
-
-try:
-    while True:
-        pass
-except KeyboardInterrupt:
-    LC.run_event.clear()
-    LC.th.join()
-    print("Thread successfully closed.")
-    sys.exit(1)
