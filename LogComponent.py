@@ -23,12 +23,12 @@ class LogComponent:
         self.loop = asyncio.get_event_loop()
         self.run_event = threading.Event()
         self.run_event.set()
-        # For check_log_folder
+        # For check_log_folder: th1
         self.th1 = threading.Thread(target=self.check_log_folder, args=())
         self.th1.start()
-        # For write
+        # For write: th2
         self.th2 = None
-    
+
     def get_time(self): # to second
         return datetime.now().strftime('%Y%m%d_%H_%M_%S.%f')[:-7]
     
@@ -50,7 +50,7 @@ class LogComponent:
             
             # Sleep for 1 second
             time.sleep(1)
-            
+
             # print("check_log_folder at " + str(i) + " s ...")
 
         print('check_log_folder closing down')
